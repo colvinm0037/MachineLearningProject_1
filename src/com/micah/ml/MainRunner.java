@@ -3,6 +3,7 @@ package com.micah.ml;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,6 +41,8 @@ public class MainRunner {
 		
 		// TODO: Add Cross Validation!
 		
+		System.out.println("Beginning Micah Colvin's Machine Learning Project #1");
+		
 		// Build the student data
 		BufferedReader testfile = readDataFile("data/students_test.arff");
 		Instances test = new Instances(testfile);
@@ -57,20 +60,23 @@ public class MainRunner {
 		// TODO: Build the other data set
 		
 		// Call each of the five algorithms		
-		//DecisionTree(studentData, test);
-		//NeuralNetwork(studentData, test);
-		//Boosting(studentData, test);
+		DecisionTree(studentData, test);
+		Boosting(studentData, test);
 		SVM(studentData, test);
-		//KNN(studentData, test);
-		
+		KNN(studentData, test);
+		NeuralNetwork(studentData, test);
+	
+		System.out.println("Program finished.");
 	}
 	
 	public static void DecisionTree(List<Instances> dataList, Instances testData) throws Exception {
 		
-		System.out.println("STARTING Decision Tree\n");
+		System.out.println("\nStarting Decision Tree");
+							
+		List<String> trainingRates = new ArrayList<String>();
+		List<String> testingRates = new ArrayList<String>();
+		PrintWriter writer = new PrintWriter("decision_tree.csv", "UTF-8");
 		
-		System.out.println("Training Results");
-					
 		for (Instances instances : dataList) {
 			
 			// Build the classifier with this instance
@@ -82,12 +88,9 @@ public class MainRunner {
 			Evaluation eval = new Evaluation(instances);
 			eval.evaluateModel(cls, instances);			
 			
-			// Print the result
-			System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");
+			trainingRates.add(eval.errorRate() * 100 + "%");
 		}
-		
-		System.out.println("Test Results");
-				
+						
 		for (Instances instances : dataList) {
 		
 			// Build the classifier with this instance
@@ -101,16 +104,24 @@ public class MainRunner {
 			eval.evaluateModel(cls, testData);
 			
 			// Print the result
-			System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");		
+			testingRates.add(eval.errorRate() * 100 + "%");		
 		}
 		
+		writer.println("Data Used, Training Error, Test Error");
+		for (int i = 0; i < 10; i++) {
+			writer.println(((i + 1) * 10) + "," + trainingRates.get(i) + "," + testingRates.get(i));
+		}
+		writer.close();
+		System.out.println("Decision tree results saved to decision_tree.csv");
 	}
 	
 	public static void Boosting(List<Instances> dataList, Instances testData) throws Exception {
 		
-		System.out.println("STARTING Boosting Tree\n");
+		System.out.println("\nStarting Boosting Tree");
 		
-		System.out.println("Training Results");
+		List<String> trainingRates = new ArrayList<String>();
+		List<String> testingRates = new ArrayList<String>();
+		PrintWriter writer = new PrintWriter("boosting.csv", "UTF-8");
 					
 		for (Instances instances : dataList) {
 			
@@ -124,11 +135,9 @@ public class MainRunner {
 			eval.evaluateModel(cls, instances);			
 			
 			// Print the result
-			System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");
+			trainingRates.add(eval.errorRate() * 100 + "%");	
 		}
-		
-		System.out.println("Test Results");
-				
+						
 		for (Instances instances : dataList) {
 		
 			// Build the classifier with this instance
@@ -142,15 +151,24 @@ public class MainRunner {
 			eval.evaluateModel(cls, testData);
 			
 			// Print the result
-			System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");		
+			testingRates.add(eval.errorRate() * 100 + "%");		
 		}		
+		
+		writer.println("Data Used, Training Error, Test Error");
+		for (int i = 0; i < 10; i++) {
+			writer.println(((i + 1) * 10) + "," + trainingRates.get(i) + "," + testingRates.get(i));
+		}
+		writer.close();
+		System.out.println("Boosting results saved to boosting.csv");
 	}		
 	
 	public static void NeuralNetwork(List<Instances> dataList, Instances testData) throws Exception {
 		
-		System.out.println("STARTING Neural Network\n");
+		System.out.println("\nStarting Neural Network (This usually takes a minute or two to finish)");
 		
-		System.out.println("Training Results");
+		List<String> trainingRates = new ArrayList<String>();
+		List<String> testingRates = new ArrayList<String>();
+		PrintWriter writer = new PrintWriter("neural_networks.csv", "UTF-8");
 					
 		for (Instances instances : dataList) {
 			
@@ -164,7 +182,7 @@ public class MainRunner {
 			eval.evaluateModel(cls, instances);			
 			
 			// Print the result
-			System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");
+			trainingRates.add(eval.errorRate() * 100 + "%");
 		}
 		
 		System.out.println("Test Results");
@@ -182,26 +200,35 @@ public class MainRunner {
 			eval.evaluateModel(cls, testData);
 			
 			// Print the result
-			System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");		
+			testingRates.add(eval.errorRate() * 100 + "%");
 		}
+		
+		writer.println("Data Used, Training Error, Test Error");
+		for (int i = 0; i < 10; i++) {
+			writer.println(((i + 1) * 10) + "," + trainingRates.get(i) + "," + testingRates.get(i));
+		}
+		writer.close();
+		System.out.println("Neural Network results saved to neural_networks.csv");
 	}
 	
 	public static void SVM(List<Instances> dataList, Instances testData) throws Exception {
 		
 		// Some code borrow from: https://stackoverflow.com/questions/5223982/how-to-use-libsvm-with-weka-in-my-java-code
 		
-		System.out.println("STARTING SVM\n");
+		System.out.println("\nStarting SVM");
 		
-		System.out.println("Training Results");
-					
+		PrintWriter writer = new PrintWriter("svm.csv", "UTF-8");
+		
+		List<List<String>> trainingSets = new ArrayList<List<String>>();
+		List<List<String>> testingSets = new ArrayList<List<String>>();
+		
 		List<Integer> kernels = Arrays.asList(0, 1);
 		String[] kernelNames = new String[]{"Linear", "Polynomial", "Radial Basis Function", "Sigmoid"};
 		
-		System.out.println("Training Results");
 		for (Integer i : kernels) {
 
-			System.out.println("Using Kernel: " + kernelNames[i]);
-		
+			List<String> trainingRates = new ArrayList<String>();
+						
 			for (Instances instances : dataList) {
 				
 				// Build the classifier with this instance
@@ -218,15 +245,14 @@ public class MainRunner {
 				eval.evaluateModel(cls, instances);			
 				
 				// Print the result
-				System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");
+				trainingRates.add(eval.errorRate() * 100 + "%");
 			}
-			System.out.println();
+			trainingSets.add(trainingRates);
 		}
 		
-		System.out.println("Test Results");
 		for (Integer i : kernels) {
-
-			System.out.println("Using Kernel: " + kernelNames[i]);
+			
+			List<String> testingRates = new ArrayList<String>();
 			
 			for (Instances instances : dataList) {
 			
@@ -245,21 +271,40 @@ public class MainRunner {
 				eval.evaluateModel(cls, testData);
 				
 				// Print the result
-				System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");		
-			}	
-			System.out.println();
+				testingRates.add(eval.errorRate() * 100 + "%");		
+			}
+			testingSets.add(testingRates);			
 		}
+		
+		for (int i = 0; i < trainingSets.size(); i++) {
+			
+			List<String> trainingRates = trainingSets.get(i);
+			List<String> testingRates = testingSets.get(i);
+
+			writer.println("Using Kernel: " + kernelNames[i]);
+			writer.println("Data Used, Training Error, Test Error");
+			for (int j = 0; j < 10; j++) {
+				writer.println(((j + 1) * 10) + "," + trainingRates.get(j) + "," + testingRates.get(j));
+			}
+			writer.println();
+		}
+		
+		writer.close();
+		System.out.println("SVM results saved to svm.csv");
 	}
 	
 	public static void KNN(List<Instances> dataList, Instances testData) throws Exception {
-		System.out.println("STARTING KNN\n");
 		
+		System.out.println("\nStarting KNN");
+		PrintWriter writer = new PrintWriter("knn.csv", "UTF-8");
+		
+		List<List<String>> trainingSets = new ArrayList<List<String>>();
+		List<List<String>> testingSets = new ArrayList<List<String>>();
 		List<Integer> knn = Arrays.asList(1, 2, 3, 4, 5, 10, 20);
 		
-		System.out.println("Training Results");
 		for (Integer i : knn) {
-
-			System.out.println("Using KNN: " + i);
+			
+			List<String> trainingRates = new ArrayList<String>();
 			
 			for (Instances instances : dataList) {
 				
@@ -275,17 +320,15 @@ public class MainRunner {
 				eval.evaluateModel(cls, instances);			
 				
 				// Print the result
-				System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");
+				trainingRates.add(eval.errorRate() * 100 + "%");
 			}
-			System.out.println();
+			trainingSets.add(trainingRates);
 		}
-		
-		System.out.println("Test Results");
 		
 		for (Integer i : knn) {
 		
-			System.out.println("Using KNN: " + i);
-				
+			List<String> testingRates = new ArrayList<String>();	
+			
 			for (Instances instances : dataList) {
 			
 				// Build the classifier with this instance
@@ -297,15 +340,29 @@ public class MainRunner {
 				
 				// Evaluate the classifier with the test data
 				Evaluation eval = new Evaluation(instances);
-				
 				eval.evaluateModel(cls, testData);
 				
 				// Print the result
-				System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");		
+				testingRates.add(eval.errorRate() * 100 + "%");		
 			}
-			System.out.println();
+			testingSets.add(testingRates);
 		}
+		
+		for (int i = 0; i < trainingSets.size(); i++) {
+			
+			List<String> trainingRates = trainingSets.get(i);
+			List<String> testingRates = testingSets.get(i);
+
+			writer.println("Using KNN: " + i);
+			writer.println("Data Used, Training Error, Test Error");
+			for (int j = 0; j < 10; j++) {
+				writer.println(((j + 1) * 10) + "," + trainingRates.get(j) + "," + testingRates.get(j));
+			}
+			writer.println();
+		}
+		
+		writer.close();
+		System.out.println("KNN results saved to knn.csv");
 	}
-	
 	
 }

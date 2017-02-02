@@ -188,16 +188,14 @@ public class MainRunner {
 	
 	public static void SVM(List<Instances> dataList, Instances testData) throws Exception {
 		
-		// TODO: Use at least two Kernel Functions
-
 		// Some code borrow from: https://stackoverflow.com/questions/5223982/how-to-use-libsvm-with-weka-in-my-java-code
 		
 		System.out.println("STARTING SVM\n");
 		
 		System.out.println("Training Results");
 					
-		List<Integer> kernels = Arrays.asList(0, 1, 2, 3, 4);
-		String[] kernelNames = new String[]{"C-SVC", "nu_SVC", "one-class SVM", "epsilon-SVR", "nu-SVR"};
+		List<Integer> kernels = Arrays.asList(0, 1);
+		String[] kernelNames = new String[]{"Linear", "Polynomial", "Radial Basis Function", "Sigmoid"};
 		
 		System.out.println("Training Results");
 		for (Integer i : kernels) {
@@ -208,7 +206,7 @@ public class MainRunner {
 				
 				// Build the classifier with this instance
 				LibSVM svm = new LibSVM();
-				String options = ( "-S 1" );
+				String options = ( "-S " + i );
 				String[] optionsArray = options.split( " " );
 				
 				Classifier cls = svm;
@@ -234,7 +232,7 @@ public class MainRunner {
 			
 				// Build the classifier with this instance
 				LibSVM svm = new LibSVM();
-				String options = ( "-S 1" );
+				String options = ( "-S " + i );
 				String[] optionsArray = options.split( " " );
 				
 				Classifier cls = svm;

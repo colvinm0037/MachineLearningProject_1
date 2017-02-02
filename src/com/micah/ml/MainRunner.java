@@ -196,40 +196,61 @@ public class MainRunner {
 		
 		System.out.println("Training Results");
 					
-		for (Instances instances : dataList) {
-			
-			// Build the classifier with this instance
-			
-			LibSVM svm = new LibSVM();
-			Classifier cls = svm;
-			cls.buildClassifier(instances);
-			
-			// Evaluate the classifier with the test data
-			Evaluation eval = new Evaluation(instances);
-			eval.evaluateModel(cls, instances);			
-			
-			// Print the result
-			System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");
+		List<Integer> kernels = Arrays.asList(0, 1, 2, 3, 4);
+		String[] kernelNames = new String[]{"C-SVC", "nu_SVC", "one-class SVM", "epsilon-SVR", "nu-SVR"};
+		
+		System.out.println("Training Results");
+		for (Integer i : kernels) {
+
+			System.out.println("Using Kernel: " + kernelNames[i]);
+		
+			for (Instances instances : dataList) {
+				
+				// Build the classifier with this instance
+				LibSVM svm = new LibSVM();
+				String options = ( "-S 1" );
+				String[] optionsArray = options.split( " " );
+				
+				Classifier cls = svm;
+				((AbstractClassifier) cls).setOptions( optionsArray );
+				cls.buildClassifier(instances);
+				
+				// Evaluate the classifier with the test data
+				Evaluation eval = new Evaluation(instances);
+				eval.evaluateModel(cls, instances);			
+				
+				// Print the result
+				System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");
+			}
+			System.out.println();
 		}
 		
 		System.out.println("Test Results");
-		
-		for (Instances instances : dataList) {
-		
-			// Build the classifier with this instance
-			LibSVM svm = new LibSVM();
-			Classifier cls = svm;
-			cls.buildClassifier(instances);
+		for (Integer i : kernels) {
+
+			System.out.println("Using Kernel: " + kernelNames[i]);
 			
-			// Evaluate the classifier with the test data
-			Evaluation eval = new Evaluation(instances);
+			for (Instances instances : dataList) {
 			
-			eval.evaluateModel(cls, testData);
-			
-			// Print the result
-			System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");		
-		}
+				// Build the classifier with this instance
+				LibSVM svm = new LibSVM();
+				String options = ( "-S 1" );
+				String[] optionsArray = options.split( " " );
 				
+				Classifier cls = svm;
+				((AbstractClassifier) cls).setOptions( optionsArray );
+				cls.buildClassifier(instances);
+				
+				// Evaluate the classifier with the test data
+				Evaluation eval = new Evaluation(instances);
+				
+				eval.evaluateModel(cls, testData);
+				
+				// Print the result
+				System.out.println("Error Rate: " + eval.errorRate() * 100 + "%");		
+			}	
+			System.out.println();
+		}
 	}
 	
 	public static void KNN(List<Instances> dataList, Instances testData) throws Exception {

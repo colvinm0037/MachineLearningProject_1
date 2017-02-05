@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import weka.attributeSelection.CfsSubsetEval;
-import weka.attributeSelection.GreedyStepwise;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -18,10 +16,7 @@ import weka.classifiers.functions.LibSVM;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.classifiers.lazy.IBk;
 import weka.classifiers.meta.AdaBoostM1;
-import weka.classifiers.meta.AttributeSelectedClassifier;
 import weka.classifiers.trees.J48;
-import weka.classifiers.trees.M5P;
-import weka.classifiers.trees.REPTree;
 import weka.core.Instances;
  
 public class MainRunner {
@@ -31,6 +26,10 @@ public class MainRunner {
 	public static String NEURAL_NETWORK = "NeuralNetwork";
 	public static String SVM = "SVM";
 	public static String KNN = "KNN";
+
+	// Used some code and help from:
+	// http://www.programcreek.com/2013/01/a-simple-machine-learning-example-in-java/
+	// http://weka.wikispaces.com/Use+WEKA+in+your+Java+code
 	
 	public static BufferedReader readDataFile(String filename) {
 		BufferedReader inputReader = null;
@@ -45,10 +44,6 @@ public class MainRunner {
 	}
   
 	public static void main(String[] args) throws Exception {
-		
-		// Borrowed some code from: http://www.programcreek.com/2013/01/a-simple-machine-learning-example-in-java/
-		
-		// TODO: Add Cross Validation!
 		
 		System.out.println("Beginning Micah Colvin's Machine Learning Project #1");
 		
@@ -73,28 +68,28 @@ public class MainRunner {
 
 		List<Instances> bikesData = new ArrayList<Instances>();
 		
-		for (int i = 10; i <= 100; i += 10) {
+		for (int i = 100; i <= 100; i += 10) {
 			BufferedReader bikes = readDataFile("data/bikes_cleaned_" + i + ".arff");
 			Instances trainingData = new Instances(bikes);
 			trainingData.setClassIndex(13);
 			bikesData.add(trainingData);
 		}	
 			
-		// TODO: Update methods to allow for multiple data files
+		// Train the students data set		
+		System.out.println("Starting training on the students data");
+		Learn(studentData, studentTest, "students", DECISION_TREE, Arrays.asList(0, 1, 2)); // Uses J48 Tree
+		Learn(studentData, studentTest, "students", BOOSTING, Arrays.asList(0, 1));  // Uses J48 Tree with AdaM1 Boosting
+		Learn(studentData, studentTest, "students", NEURAL_NETWORK, Arrays.asList(0, 1)); // Uses Multilayer Perceptron
+	 	Learn(studentData, studentTest, "students", SVM, Arrays.asList(1, 3)); // Uses LibSVM with Linear and Polynomial Kernels
+		Learn(studentData, studentTest, "students", KNN, Arrays.asList(1, 2, 3, 4, 5, 10, 20)); // Uses IBk with K values of 1, 2, 3, 4, 5, 10, 20
 		
 		// Train the bikes data set
-	//	Learn(bikesData, bikesTest, "bikes", DECISION_TREE, Arrays.asList(0, 1, 2));//, 3, 4, 5)); // Uses J48 Tree		
-	//	Learn(bikesData, bikesTest, "bikes", BOOSTING, Arrays.asList(0, 1, 2));  // Uses J48 Tree with AdaM1 Boosting
-	//	Learn(bikesData, bikesTest, "bikes", NEURAL_NETWORK); // Uses Multilayer Perceptron
-	//	Learn(bikesData, bikesTest, "bikes", SVM, Arrays.asList(0, 1, 2, 3)); //, 1, 2, 3)); // Uses LibSVM with Linear and Polynomial Kernels
+		System.out.println("Starting training on the bikes data");
+		Learn(bikesData, bikesTest, "bikes", DECISION_TREE, Arrays.asList(0, 1, 2)); // Uses J48 Tree		
+		Learn(bikesData, bikesTest, "bikes", BOOSTING, Arrays.asList(0, 1, 2));  // Uses J48 Tree with AdaM1 Boosting
+		//Learn(bikesData, bikesTest, "bikes", NEURAL_NETWORK); // Uses Multilayer Perceptron
+		Learn(bikesData, bikesTest, "bikes", SVM, Arrays.asList(0, 1, 2, 3)); // Uses LibSVM with Linear and Polynomial Kernels
 		Learn(bikesData, bikesTest, "bikes", KNN, Arrays.asList(1, 2, 3, 4, 5, 10, 20)); // Uses IBk with K values of 1, 2, 3, 4, 5, 10, 20
-		
-		// Train the students data set		
-		// Learn(studentData, studentTest, "students", DECISION_TREE, Arrays.asList(0, 1, 2)); // Uses J48 Tree
-		// Learn(studentData, studentTest, "students", BOOSTING, Arrays.asList(0, 1, 2));  // Uses J48 Tree with AdaM1 Boosting
-		// Learn(studentData, studentTest, "students", NEURAL_NETWORK, Arrays.asList(0, 1)); // Uses Multilayer Perceptron
-		// Learn(studentData, studentTest, "students", SVM, Arrays.asList(0, 1, 2, 3)); // Uses LibSVM with Linear and Polynomial Kernels
-		// Learn(studentData, studentTest, "students", KNN, Arrays.asList(1, 2, 3, 4, 5, 10, 20)); // Uses IBk with K values of 1, 2, 3, 4, 5, 10, 20
 		
 		System.out.println("Program finished.");
 	}
@@ -123,12 +118,12 @@ public class MainRunner {
 			for (Instances instances : dataList) {
 				
 				// Build the classifier with this instance and train it with the training data
-				Classifier cvCls = buildClassifier(type, i);
+				Classifier cls = buildClassifier(type, i);
 				Evaluation cvEval = new Evaluation(instances);
-				cvEval.crossValidateModel(cvCls, instances, 10, new Random(1));
+				cvEval.crossValidateModel(cls, instances, 10, new Random(1));
 				cvRates.add(cvEval.errorRate() * 100 + "%");				
 				
-				Classifier cls = buildClassifier(type, i);
+				//Classifier cls = buildClassifier(type, i);
 				cls.buildClassifier(instances);
 				Evaluation eval = new Evaluation(instances);
 				
@@ -155,7 +150,7 @@ public class MainRunner {
 
 			writer.println("Using Option: " + i);
 			writer.println("Data Used, Training Error, Test Error, CV Error");
-			for (int j = 0; j < 10; j++) {
+			for (int j = 0; j < trainingRates.size(); j++) {
 				writer.println(((j + 1) * 10) + "," + trainingRates.get(j) + "," + testingRates.get(j) + "," + cvRates.get(j));
 			}
 			writer.println();
@@ -169,9 +164,7 @@ public class MainRunner {
 	public static Classifier buildClassifier(String type, int i) throws Exception {
 		
 		Classifier cls = null;
-		
-		System.out.println("I: " + i);
-		
+				
 		if (type.equals(DECISION_TREE)) {
 
 			J48 j48 = new J48();
@@ -184,24 +177,13 @@ public class MainRunner {
 				((AbstractClassifier) cls).setOptions( optionsArray );	
 				return cls;
 			} else if (i == 2) {
-				j48.setConfidenceFactor(.1f);
-			} else if (i == 3) {
-				j48.setConfidenceFactor(.2f);
-			} else if (i == 4) {
-				j48.setConfidenceFactor(.4f);
-			} else if (i == 5) {
 				j48.setConfidenceFactor(.5f);				
 			}
 			
-			cls = j48;
-			
-			System.out.println("Confidence Factor: " + j48.getConfidenceFactor());
-			
+			cls = j48;			
 			
 		} else if (type.equals(BOOSTING)) {
-			
-			System.out.println("Boosting: I = " + i);
-			
+						
 			AdaBoostM1 ada = new AdaBoostM1();
 			J48 j48 = new J48();			
 			if (i == 1) {
@@ -212,25 +194,22 @@ public class MainRunner {
 
 			cls = ada;
 			((AdaBoostM1)cls).setClassifier(j48);
-
-			// 36 with cf = .5
 			
 		} else if (type.equals(NEURAL_NETWORK)) {
 			
 			MultilayerPerceptron p = new MultilayerPerceptron();			
-			
 			if (i == 1) {
-				cls = new AdaBoostM1();
-				((AdaBoostM1)cls).setClassifier(p);
-			} else {
-				cls = p;	
+				p.setDecay(true);
 			}
+			
+			cls = p;	
+			
 			
 		} else if (type.equals(SVM)) {
 			
 			LibSVM svm = new LibSVM();
 			
-			String options = ( "-K " + i + " -S 0 -Z");
+			String options = ( "-K " + i + " -S 0");
 			String[] optionsArray = options.split( " " );			
 			cls = svm;
 			((AbstractClassifier) cls).setOptions( optionsArray );
